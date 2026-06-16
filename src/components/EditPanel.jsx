@@ -1,7 +1,7 @@
 import { FIELD_LABELS } from '../lib/fields.js';
 
 // Bottom sheet for editing the selected field's value.
-export default function EditPanel({ field, onChange, onDelete, onClose, onOpenSign }) {
+export default function EditPanel({ field, onChange, onDelete, onDuplicate, onClose, onOpenSign }) {
   if (!field) return null;
 
   return (
@@ -52,9 +52,14 @@ export default function EditPanel({ field, onChange, onDelete, onClose, onOpenSi
         )}
       </div>
 
-      <button className="btn-danger full" onClick={() => onDelete(field.id)}>
-        מחק שדה
-      </button>
+      <div className="edit-panel-foot">
+        <button className="btn-ghost" onClick={() => onDuplicate(field.id)}>
+          שכפל
+        </button>
+        <button className="btn-danger" onClick={() => onDelete(field.id)}>
+          מחק שדה
+        </button>
+      </div>
     </div>
   );
 }

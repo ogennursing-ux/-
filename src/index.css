@@ -236,6 +236,11 @@ button {
   padding: 8px;
   border-bottom: 1px solid #f3e3bf;
 }
+.place-hint.subtle {
+  background: #eef4fb;
+  color: #2f5680;
+  border-bottom-color: #d7e3f1;
+}
 
 /* ---------------- pages ---------------- */
 .pages {
@@ -402,6 +407,16 @@ button {
   height: 20px;
   accent-color: var(--primary);
 }
+.edit-panel-foot {
+  display: flex;
+  gap: 10px;
+}
+.edit-panel-foot .btn-ghost {
+  flex: 1;
+}
+.edit-panel-foot .btn-danger {
+  flex: 1;
+}
 
 /* ---------------- signature modal ---------------- */
 .modal-backdrop {
@@ -434,6 +449,48 @@ button {
   color: var(--muted);
   font-size: 13px;
   margin: 4px 0 12px;
+}
+.sign-tabs {
+  display: flex;
+  gap: 6px;
+  background: #f1f3f6;
+  padding: 4px;
+  border-radius: 10px;
+  margin: 12px 0;
+}
+.sign-tab {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--muted);
+}
+.sign-tab.active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgba(13, 27, 42, 0.1);
+}
+.font-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.font-choice {
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 28px;
+  color: var(--ink);
+  text-align: center;
+  min-height: 56px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.font-choice.active {
+  border-color: var(--primary);
+  background: #f7fbf9;
 }
 .sign-canvas {
   width: 100%;

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Dropzone from './components/Dropzone.jsx';
 import Toolbar from './components/Toolbar.jsx';
 import PdfPage from './components/PdfPage.jsx';
@@ -21,6 +21,25 @@ export default function App() {
     () => fields.find((f) => f.id === selectedId) || null,
     [fields, selectedId],
   );
+
+  // Keyboard shortcuts: Delete removes the selected field, Escape cancels.
+  useEffect(() => {
+    const onKey = (e) => {
+      const tag = e.target.tagName;
+      const typing = tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable;
+      if (typing) return;
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
+        e.preventDefault();
+        deleteField(selectedId);
+      } else if (e.key === 'Escape') {
+        if (activeTool) setActiveTool(null);
+        else setSelectedId(null);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, activeTool]);
 
   async function handleFile(file) {
     const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
@@ -75,6 +94,19 @@ export default function App() {
     if (signFor === id) setSignFor(null);
   }
 
+  function duplicateField(id) {
+    const src = fields.find((f) => f.id === id);
+    if (!src) return;
+    const copy = {
+      ...src,
+      id: uid(),
+      xPct: clamp(src.xPct + 0.02, 0, 1 - src.wPct),
+      yPct: clamp(src.yPct + 0.02, 0, 1 - src.hPct),
+    };
+    setFields((prev) => [...prev, copy]);
+    setSelectedId(copy.id);
+  }
+
   function reset() {
     if (fields.length && !confirm('להתחיל מסמך חדש? השדות הנוכחיים יימחקו.')) return;
     setPages([]);
@@ -87,6 +119,10 @@ export default function App() {
 
   async function download() {
     if (!pdfBytes) return;
+    const emptySignatures = fields.filter((f) => f.type === 'signature' && !f.value).length;
+    if (emptySignatures && !confirm(`יש ${emptySignatures} שדות חתימה ריקים. להוריד בכל זאת?`)) {
+      return;
+    }
     setBusy(true);
     try {
       // Pass a copy so the original stays usable for repeated downloads.
@@ -133,8 +169,14 @@ export default function App() {
             canDownload={hasDoc}
           />
 
-          {activeTool && (
+          {activeTool ? (
             <div className="place-hint">לחץ על המסמך כדי למקם {labelOf(activeTool)}</div>
+          ) : (
+            fields.length === 0 && (
+              <div className="place-hint subtle">
+                בחר סוג שדה מהסרגל למעלה ולחץ על המסמך כדי להוסיף אותו
+              </div>
+            )
           )}
 
           <main
@@ -164,6 +206,7 @@ export default function App() {
             field={selectedField}
             onChange={updateField}
             onDelete={deleteField}
+            onDuplicate={duplicateField}
             onClose={() => setSelectedId(null)}
             onOpenSign={setSignFor}
           />
