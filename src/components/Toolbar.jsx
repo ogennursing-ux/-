@@ -2,8 +2,9 @@ import { FIELD_ICONS, FIELD_LABELS } from '../lib/fields.js';
 
 const TOOLS = ['signature', 'text', 'date', 'checkbox'];
 
-// Top toolbar: pick a field tool to place, then download or start over.
-export default function Toolbar({ activeTool, onSelectTool, onDownload, onReset, busy, canDownload }) {
+// Setup-phase toolbar: pick a field tool to place, start over, or continue to
+// the signing flow.
+export default function Toolbar({ activeTool, onSelectTool, onContinue, onReset, busy, canContinue }) {
   return (
     <div className="toolbar">
       <div className="toolbar-tools">
@@ -25,8 +26,8 @@ export default function Toolbar({ activeTool, onSelectTool, onDownload, onReset,
         <button className="btn-ghost" onClick={onReset} disabled={busy}>
           מסמך חדש
         </button>
-        <button className="btn-primary" onClick={onDownload} disabled={busy || !canDownload}>
-          {busy ? 'מעבד…' : 'הורד PDF חתום'}
+        <button className="btn-primary" onClick={onContinue} disabled={busy || !canContinue}>
+          המשך לחתימה ›
         </button>
       </div>
     </div>

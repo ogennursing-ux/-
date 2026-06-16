@@ -1,12 +1,15 @@
 import { useRef } from 'react';
 import FieldBox from './FieldBox.jsx';
 
-// One PDF page image with its field overlays. When a tool is active, clicking
-// the page background places a new field at the click position.
+// One PDF page image with its field overlays. When a tool is active (setup
+// phase), clicking the page background places a new field at the click position.
 export default function PdfPage({
   page,
   index,
   fields,
+  signers,
+  phase,
+  currentSigner,
   activeTool,
   selectedId,
   onPlace,
@@ -17,7 +20,7 @@ export default function PdfPage({
   const ref = useRef(null);
 
   const handlePointerDown = (e) => {
-    if (!activeTool) return;
+    if (phase !== 'setup' || !activeTool) return;
     // Ignore clicks that land on an existing field.
     if (e.target.closest('.field-box')) return;
     const rect = ref.current.getBoundingClientRect();
@@ -31,7 +34,7 @@ export default function PdfPage({
       <div
         ref={ref}
         className="pdf-page"
-        style={{ cursor: activeTool ? 'crosshair' : 'default' }}
+        style={{ cursor: phase === 'setup' && activeTool ? 'crosshair' : 'default' }}
         onPointerDown={handlePointerDown}
       >
         <img src={page.url} alt={`עמוד ${index + 1}`} draggable={false} />
@@ -42,6 +45,8 @@ export default function PdfPage({
               key={f.id}
               field={f}
               containerRef={ref}
+              color={signers[f.signer]?.color || '#1f7a53'}
+              locked={phase === 'sign' && f.signer !== currentSigner}
               selected={selectedId === f.id}
               onSelect={onSelect}
               onChange={onChange}
@@ -49,9 +54,7 @@ export default function PdfPage({
             />
           ))}
       </div>
-      <div className="page-num">
-        עמוד {index + 1}
-      </div>
+      <div className="page-num">עמוד {index + 1}</div>
     </div>
   );
 }

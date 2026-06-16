@@ -1,17 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
 import Dropzone from './components/Dropzone.jsx';
 import Toolbar from './components/Toolbar.jsx';
+import SignerBar from './components/SignerBar.jsx';
+import SignFlowBar from './components/SignFlowBar.jsx';
 import PdfPage from './components/PdfPage.jsx';
 import EditPanel from './components/EditPanel.jsx';
 import SignaturePad from './components/SignaturePad.jsx';
 import { renderPdfPages, buildSignedPdf } from './lib/pdfUtils.js';
-import { FIELD_DEFAULTS, clamp, uid, todayISO } from './lib/fields.js';
+import { FIELD_DEFAULTS, DEFAULT_SIGNERS, clamp, uid, todayISO } from './lib/fields.js';
 
 export default function App() {
   const [pages, setPages] = useState([]);
   const [pdfBytes, setPdfBytes] = useState(null); // original ArrayBuffer (kept intact)
   const [baseName, setBaseName] = useState('document');
   const [fields, setFields] = useState([]);
+  const [signers, setSigners] = useState(() => DEFAULT_SIGNERS.map((s) => ({ ...s })));
+
+  const [phase, setPhase] = useState('setup'); // 'setup' | 'sign'
+  const [activeSigner, setActiveSigner] = useState(0); // owner for newly placed fields
+  const [currentSigner, setCurrentSigner] = useState(0); // whose turn it is while signing
+
   const [activeTool, setActiveTool] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [signFor, setSignFor] = useState(null); // field id whose signature pad is open
@@ -22,13 +30,14 @@ export default function App() {
     [fields, selectedId],
   );
 
-  // Keyboard shortcuts: Delete removes the selected field, Escape cancels.
+  // Keyboard shortcuts: Delete removes the selected field (setup only),
+  // Escape cancels the active tool or clears the selection.
   useEffect(() => {
     const onKey = (e) => {
       const tag = e.target.tagName;
       const typing = tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable;
       if (typing) return;
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId && phase === 'setup') {
         e.preventDefault();
         deleteField(selectedId);
       } else if (e.key === 'Escape') {
@@ -39,7 +48,7 @@ export default function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, activeTool]);
+  }, [selectedId, activeTool, phase]);
 
   async function handleFile(file) {
     const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
@@ -58,6 +67,8 @@ export default function App() {
       setFields([]);
       setSelectedId(null);
       setActiveTool(null);
+      setPhase('setup');
+      setCurrentSigner(0);
     } catch (err) {
       console.error(err);
       alert('לא ניתן לפתוח את הקובץ: ' + err.message);
@@ -72,6 +83,7 @@ export default function App() {
       id: uid(),
       type,
       pageIndex,
+      signer: activeSigner,
       wPct: def.w,
       hPct: def.h,
       xPct: clamp(xPct - def.w / 2, 0, 1 - def.w),
@@ -107,14 +119,52 @@ export default function App() {
     setSelectedId(copy.id);
   }
 
+  function renameSigner(index, name) {
+    setSigners((prev) => prev.map((s, i) => (i === index ? { ...s, name } : s)));
+  }
+
   function reset() {
     if (fields.length && !confirm('להתחיל מסמך חדש? השדות הנוכחיים יימחקו.')) return;
     setPages([]);
     setPdfBytes(null);
     setFields([]);
+    setSigners(DEFAULT_SIGNERS.map((s) => ({ ...s })));
     setSelectedId(null);
     setActiveTool(null);
     setSignFor(null);
+    setPhase('setup');
+    setActiveSigner(0);
+    setCurrentSigner(0);
+  }
+
+  function startSigning() {
+    if (!fields.length) {
+      alert('הוסף לפחות שדה אחד לפני המעבר לחתימה.');
+      return;
+    }
+    setSelectedId(null);
+    setActiveTool(null);
+    setCurrentSigner(0);
+    setPhase('sign');
+  }
+
+  function backToEdit() {
+    setSelectedId(null);
+    setPhase('setup');
+  }
+
+  function nextSigner() {
+    const remaining = fields.filter(
+      (f) => f.signer === currentSigner && f.type === 'signature' && !f.value,
+    ).length;
+    if (
+      remaining &&
+      !confirm(`ל${signers[currentSigner].name} נשארו ${remaining} שדות חתימה ריקים. להמשיך בכל זאת?`)
+    ) {
+      return;
+    }
+    setSelectedId(null);
+    setCurrentSigner((i) => Math.min(i + 1, signers.length - 1));
   }
 
   async function download() {
@@ -160,29 +210,46 @@ export default function App() {
         <Dropzone onFile={handleFile} busy={busy} />
       ) : (
         <>
-          <Toolbar
-            activeTool={activeTool}
-            onSelectTool={setActiveTool}
-            onDownload={download}
-            onReset={reset}
-            busy={busy}
-            canDownload={hasDoc}
-          />
-
-          {activeTool ? (
-            <div className="place-hint">לחץ על המסמך כדי למקם {labelOf(activeTool)}</div>
+          {phase === 'setup' ? (
+            <>
+              <SignerBar
+                signers={signers}
+                activeSigner={activeSigner}
+                onSelect={setActiveSigner}
+                onRename={renameSigner}
+              />
+              <Toolbar
+                activeTool={activeTool}
+                onSelectTool={setActiveTool}
+                onContinue={startSigning}
+                onReset={reset}
+                busy={busy}
+                canContinue={fields.length > 0}
+              />
+              {activeTool ? (
+                <div className="place-hint">לחץ על המסמך כדי למקם {labelOf(activeTool)}</div>
+              ) : (
+                fields.length === 0 && (
+                  <div className="place-hint subtle">
+                    בחר סוג שדה מהסרגל למעלה ולחץ על המסמך כדי להוסיף אותו
+                  </div>
+                )
+              )}
+            </>
           ) : (
-            fields.length === 0 && (
-              <div className="place-hint subtle">
-                בחר סוג שדה מהסרגל למעלה ולחץ על המסמך כדי להוסיף אותו
-              </div>
-            )
+            <SignFlowBar
+              signers={signers}
+              currentSigner={currentSigner}
+              onNext={nextSigner}
+              onBack={backToEdit}
+              onDownload={download}
+              busy={busy}
+            />
           )}
 
           <main
             className="pages"
             onPointerDown={(e) => {
-              // Click on empty canvas area clears the selection.
               if (e.target.classList.contains('pages')) setSelectedId(null);
             }}
           >
@@ -192,6 +259,9 @@ export default function App() {
                 page={page}
                 index={i}
                 fields={fields}
+                signers={signers}
+                phase={phase}
+                currentSigner={currentSigner}
                 activeTool={activeTool}
                 selectedId={selectedId}
                 onPlace={placeField}
@@ -204,6 +274,8 @@ export default function App() {
 
           <EditPanel
             field={selectedField}
+            signers={signers}
+            phase={phase}
             onChange={updateField}
             onDelete={deleteField}
             onDuplicate={duplicateField}

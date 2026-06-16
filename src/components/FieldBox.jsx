@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { clamp, FIELD_LABELS } from '../lib/fields.js';
+import { clamp, hexToRgba } from '../lib/fields.js';
+import { FIELD_LABELS } from '../lib/fields.js';
 import { formatDate } from '../lib/pdfUtils.js';
 
 const MIN_W = 0.03;
@@ -7,11 +8,23 @@ const MIN_H = 0.02;
 
 // A single placed field rendered over the page. Handles drag (move) and resize
 // via pointer capture so it works the same with mouse and touch.
-export default function FieldBox({ field, containerRef, selected, onSelect, onChange, onDelete }) {
+// `color` tints the box by its owning signer; `locked` disables interaction
+// (used during signing when the field belongs to a different signer).
+export default function FieldBox({
+  field,
+  containerRef,
+  color,
+  locked,
+  selected,
+  onSelect,
+  onChange,
+  onDelete,
+}) {
   const boxRef = useRef(null);
   const state = useRef(null);
 
   const begin = (mode) => (e) => {
+    if (locked) return;
     e.stopPropagation();
     onSelect(field.id);
     state.current = {
@@ -54,21 +67,24 @@ export default function FieldBox({ field, containerRef, selected, onSelect, onCh
   return (
     <div
       ref={boxRef}
-      className={`field-box${selected ? ' selected' : ''} type-${field.type}`}
+      className={`field-box${selected ? ' selected' : ''}${locked ? ' locked' : ''} type-${field.type}`}
       style={{
         left: `${field.xPct * 100}%`,
         top: `${field.yPct * 100}%`,
         width: `${field.wPct * 100}%`,
         height: `${field.hPct * 100}%`,
+        borderColor: color,
+        background: hexToRgba(color, selected ? 0.16 : 0.1),
+        boxShadow: selected ? `0 0 0 2px ${hexToRgba(color, 0.35)}` : 'none',
       }}
       onPointerDown={begin('move')}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <FieldContent field={field} />
+      <FieldContent field={field} color={color} />
 
-      {selected && (
+      {selected && !locked && (
         <>
           <button
             className="field-delete"
@@ -81,19 +97,25 @@ export default function FieldBox({ field, containerRef, selected, onSelect, onCh
           >
             ✕
           </button>
-          <span className="field-resize" onPointerDown={begin('resize')} />
+          <span
+            className="field-resize"
+            style={{ borderColor: color }}
+            onPointerDown={begin('resize')}
+          />
         </>
       )}
     </div>
   );
 }
 
-function FieldContent({ field }) {
+function FieldContent({ field, color }) {
   if (field.type === 'signature') {
     return field.value ? (
       <img className="field-sign-img" src={field.value} alt="חתימה" draggable={false} />
     ) : (
-      <span className="field-placeholder">{FIELD_LABELS.signature}</span>
+      <span className="field-placeholder" style={{ color }}>
+        {FIELD_LABELS.signature}
+      </span>
     );
   }
   if (field.type === 'checkbox') {
@@ -103,6 +125,8 @@ function FieldContent({ field }) {
   return text ? (
     <span className="field-text">{text}</span>
   ) : (
-    <span className="field-placeholder">{FIELD_LABELS[field.type]}</span>
+    <span className="field-placeholder" style={{ color }}>
+      {FIELD_LABELS[field.type]}
+    </span>
   );
 }

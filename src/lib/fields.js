@@ -34,3 +34,18 @@ export const todayISO = () => {
   const pad = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
+
+// Two signers who fill the document one after the other.
+export const DEFAULT_SIGNERS = [
+  { name: 'חותם 1', color: '#1f7a53' },
+  { name: 'חותם 2', color: '#2563eb' },
+];
+
+// Convert a #rrggbb color to an rgba() string with the given alpha.
+export function hexToRgba(hex, alpha) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}

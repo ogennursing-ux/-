@@ -1,7 +1,17 @@
 import { FIELD_LABELS } from '../lib/fields.js';
 
-// Bottom sheet for editing the selected field's value.
-export default function EditPanel({ field, onChange, onDelete, onDuplicate, onClose, onOpenSign }) {
+// Bottom sheet for editing the selected field's value (and, during setup, which
+// signer it belongs to).
+export default function EditPanel({
+  field,
+  signers,
+  phase,
+  onChange,
+  onDelete,
+  onDuplicate,
+  onClose,
+  onOpenSign,
+}) {
   if (!field) return null;
 
   return (
@@ -12,6 +22,23 @@ export default function EditPanel({ field, onChange, onDelete, onDuplicate, onCl
           ✕
         </button>
       </div>
+
+      {phase === 'setup' && (
+        <div className="assign-row">
+          <span className="assign-label">שייך ל:</span>
+          {signers.map((s, i) => (
+            <button
+              key={i}
+              className={`assign-chip${field.signer === i ? ' active' : ''}`}
+              style={{ borderColor: field.signer === i ? s.color : undefined }}
+              onClick={() => onChange(field.id, { signer: i })}
+            >
+              <span className="signer-dot" style={{ background: s.color }} />
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="edit-panel-body">
         {field.type === 'text' && (
@@ -52,14 +79,16 @@ export default function EditPanel({ field, onChange, onDelete, onDuplicate, onCl
         )}
       </div>
 
-      <div className="edit-panel-foot">
-        <button className="btn-ghost" onClick={() => onDuplicate(field.id)}>
-          שכפל
-        </button>
-        <button className="btn-danger" onClick={() => onDelete(field.id)}>
-          מחק שדה
-        </button>
-      </div>
+      {phase === 'setup' && (
+        <div className="edit-panel-foot">
+          <button className="btn-ghost" onClick={() => onDuplicate(field.id)}>
+            שכפל
+          </button>
+          <button className="btn-danger" onClick={() => onDelete(field.id)}>
+            מחק שדה
+          </button>
+        </div>
+      )}
     </div>
   );
 }
