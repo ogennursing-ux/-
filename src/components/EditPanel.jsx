@@ -1,0 +1,60 @@
+import { FIELD_LABELS } from '../lib/fields.js';
+
+// Bottom sheet for editing the selected field's value.
+export default function EditPanel({ field, onChange, onDelete, onClose, onOpenSign }) {
+  if (!field) return null;
+
+  return (
+    <div className="edit-panel">
+      <div className="edit-panel-head">
+        <strong>{FIELD_LABELS[field.type]}</strong>
+        <button className="icon-btn" onClick={onClose} aria-label="סגור">
+          ✕
+        </button>
+      </div>
+
+      <div className="edit-panel-body">
+        {field.type === 'text' && (
+          <input
+            className="text-input"
+            type="text"
+            value={field.value || ''}
+            placeholder="הקלד טקסט"
+            autoFocus
+            onChange={(e) => onChange(field.id, { value: e.target.value })}
+          />
+        )}
+
+        {field.type === 'date' && (
+          <input
+            className="text-input"
+            type="date"
+            value={field.value || ''}
+            onChange={(e) => onChange(field.id, { value: e.target.value })}
+          />
+        )}
+
+        {field.type === 'checkbox' && (
+          <label className="checkbox-row">
+            <input
+              type="checkbox"
+              checked={field.value === true}
+              onChange={(e) => onChange(field.id, { value: e.target.checked })}
+            />
+            <span>סמן את התיבה</span>
+          </label>
+        )}
+
+        {field.type === 'signature' && (
+          <button className="btn-primary full" onClick={() => onOpenSign(field.id)}>
+            {field.value ? 'חתום מחדש' : 'פתח לוח חתימה'}
+          </button>
+        )}
+      </div>
+
+      <button className="btn-danger full" onClick={() => onDelete(field.id)}>
+        מחק שדה
+      </button>
+    </div>
+  );
+}
