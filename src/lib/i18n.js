@@ -183,6 +183,7 @@ const EN = {
   'הודעה לחותם (לא תופיע במסמך)': 'Message to the signer (not shown in the document)',
   'דפים (למשל 1-3,5)': 'Pages (e.g. 1-3,5)',
   'הורד דפים נבחרים': 'Download selected pages',
+  'הורד כל דף כתמונה': 'Download each page as an image',
   'הורד הכל': 'Download all',
   'כמה מסמכים אוחדו לאחד': 'Multiple documents were merged into one',
 
