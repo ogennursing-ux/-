@@ -1203,6 +1203,9 @@ button {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* let the grid column shrink instead of forcing the form wider than the
+     screen (which clipped the left-column inputs on phones) */
+  min-width: 0;
 }
 .df-field > span {
   font-size: 12.5px;
@@ -1210,6 +1213,8 @@ button {
   color: var(--muted);
 }
 .df-field input {
+  width: 100%;
+  min-width: 0;
   padding: 10px 12px;
   border: 1.5px solid var(--line);
   border-radius: 9px;
