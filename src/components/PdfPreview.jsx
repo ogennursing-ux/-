@@ -33,7 +33,7 @@ export default function PdfPreview({ getBytes, name, onClose, onDownload }) {
     for (let i = 0; i < pages.length; i++) {
       const res = await fetch(pages[i].url);
       const blob = await res.blob();
-      downloadBlob(blob, 'image/png', `${base}-page-${i + 1}.png`);
+      downloadBlob(blob, 'image/jpeg', `${base}-page-${i + 1}.jpg`);
     }
   }
 

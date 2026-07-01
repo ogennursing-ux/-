@@ -456,7 +456,6 @@ function PrepareApp({ onLogout }) {
         onDelete={deleteField}
         onDuplicate={duplicateField}
         onClose={() => setSelectedId(null)}
-        onOpenSign={() => {}}
       />
       {settingsModal}
     </div>
