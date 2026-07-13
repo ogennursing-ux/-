@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import SignFlow from './SignFlow.jsx';
 import LangToggle from './LangToggle.jsx';
 import { api } from '../lib/api.js';
-import { notify, bytesToBase64, getIp } from '../lib/notify.js';
+import { notifyAll, bytesToBase64, getIp } from '../lib/notify.js';
 import { renderPdfPages, buildSignedPdf } from '../lib/pdfUtils.js';
 import { useT } from '../lib/i18n.js';
 
@@ -85,22 +85,22 @@ export default function SignerView({ id }) {
         await api.submitSigned(id, { fields: filled, signers: { current, list: newList }, signedPdfBytes: bytes });
         setSignedBytes(bytes);
         setDoneKind('final');
-        if (req.webhook_url && req.owner_email) {
-          notify(req.webhook_url, {
+        if (req.webhook_url) {
+          notifyAll(req.webhook_url, {
             type: 'completed',
             to: req.owner_email,
             title,
             link: location.href,
             fileName: `${title}-signed.pdf`,
             fileBase64: bytesToBase64(bytes),
-          });
+          }, bytes);
         }
       } else {
         await api.advance(id, { fields: filled, signers: { current: current + 1, list: newList } });
         setDoneKind('intermediate');
         const next = newList[current + 1];
-        if (req.webhook_url && next?.email) {
-          notify(req.webhook_url, { type: 'invite', to: next.email, title, link: location.href });
+        if (req.webhook_url) {
+          notifyAll(req.webhook_url, { type: 'invite', to: next?.email, title, link: location.href });
         }
       }
       setStatus('done');

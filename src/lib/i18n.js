@@ -104,6 +104,23 @@ const EN = {
   'המייל שלך (לקבלת מסמכים חתומים)': 'Your email (to receive signed documents)',
   'כתובת ה-Webhook של Make': 'Make webhook URL',
   שמור: 'Save',
+  'בוט טלגרם': 'Telegram bot',
+  'קבל התראות ואת המסמך החתום ישירות לטלגרם. צור בוט אצל @BotFather, הדבק כאן את הטוקן, שלח לבוט הודעה כלשהי ולחץ "מצא Chat ID".':
+    'Get alerts and the signed document straight to Telegram. Create a bot with @BotFather, paste its token here, send the bot any message, then click "Find chat ID".',
+  'טוקן הבוט (מ-@BotFather)': 'Bot token (from @BotFather)',
+  'מצא Chat ID': 'Find chat ID',
+  'שלח הודעת בדיקה': 'Send test message',
+  'מחפש…': 'Searching…',
+  'שולח בדיקה…': 'Sending test…',
+  'נמצא הצ׳אט של {name}': 'Found chat with {name}',
+  'לא נמצאו הודעות — שלח לבוט הודעה בטלגרם ונסה שוב.':
+    'No messages found — send your bot a message on Telegram and try again.',
+  'הודעת הבדיקה נשלחה! בדוק בטלגרם.': 'Test message sent! Check Telegram.',
+  'הזן טוקן של בוט תחילה.': 'Enter a bot token first.',
+  'הזן טוקן ו-Chat ID תחילה.': 'Enter a bot token and chat ID first.',
+  'הודעת בדיקה ✅ הבוט מחובר לאפליקציית החתימות': 'Test message ✅ the bot is connected to the signing app',
+  'שים לב: הטוקן מוטמע בבקשות חתימה — השתמש בבוט ייעודי להתראות בלבד.':
+    'Note: the token is embedded in signing requests — use a dedicated bot for notifications only.',
 
   // signature pad
   ציור: 'Draw',
