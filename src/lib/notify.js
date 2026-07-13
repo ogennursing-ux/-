@@ -1,5 +1,7 @@
-// Owner settings (stored on the owner's device) + best-effort email
-// notifications sent through a Make.com webhook (Webhook -> Gmail).
+// Owner settings (stored on the owner's device) + best-effort notifications:
+// email through a Make.com webhook (Webhook -> Gmail) and/or a Telegram bot.
+import { notifyTelegram } from './telegram.js';
+
 const SETTINGS_KEY = 'owner_settings';
 
 export function getSettings() {
@@ -31,6 +33,42 @@ export async function notify(webhook, payload) {
     console.warn('notify failed', e);
     return false;
   }
+}
+
+// The requests table has a single `webhook_url` text column, so when Telegram
+// is configured we pack both targets into it as JSON. A plain URL string keeps
+// working as before (backward compatible with existing rows).
+export function packNotifyTarget(settings = {}) {
+  const webhook = (settings.webhook || '').trim() || null;
+  const token = (settings.tgToken || '').trim();
+  const chatId = String(settings.tgChatId || '').trim();
+  if (!token || !chatId) return webhook;
+  return JSON.stringify({ v: 1, webhook, telegram: { token, chatId } });
+}
+
+export function unpackNotifyTarget(raw) {
+  const s = (raw || '').trim();
+  if (!s) return { webhook: null, telegram: null };
+  if (s.startsWith('{')) {
+    try {
+      const j = JSON.parse(s);
+      return { webhook: j.webhook || null, telegram: j.telegram || null };
+    } catch {
+      return { webhook: null, telegram: null };
+    }
+  }
+  return { webhook: s, telegram: null };
+}
+
+// Dispatch one signing event to every configured channel. The Make webhook
+// needs a recipient email (payload.to); Telegram only needs the bot config.
+// pdfBytes (optional) is attached to Telegram 'completed' messages.
+export async function notifyAll(rawTarget, payload, pdfBytes) {
+  const { webhook, telegram } = unpackNotifyTarget(rawTarget);
+  await Promise.all([
+    webhook && payload.to ? notify(webhook, payload) : null,
+    telegram ? notifyTelegram(telegram, payload, pdfBytes) : null,
+  ]);
 }
 
 // Best-effort lookup of the signer's public IP (for the audit trail).

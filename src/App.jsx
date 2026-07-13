@@ -19,7 +19,7 @@ import { fileToPdfBytes } from './lib/docx.js';
 import { mergePdfs } from './lib/exporters.js';
 import { FIELD_DEFAULTS, FIELD_LABELS, DEFAULT_SIGNERS, clamp, uid, todayISO } from './lib/fields.js';
 import { api, rememberRequest, rememberTemplate, signingLink, formLink, listMyTemplates } from './lib/api.js';
-import { getSettings, notify } from './lib/notify.js';
+import { getSettings, notifyAll, packNotifyTarget } from './lib/notify.js';
 import { LangContext, getInitialLang, applyLang, useT } from './lib/i18n.js';
 
 export default function App() {
@@ -213,13 +213,11 @@ function PrepareApp({ onLogout }) {
         signers: { current: 0, list, note },
         signerEmail: list[0].email,
         ownerEmail: settings.ownerEmail || null,
-        webhook: settings.webhook || null,
+        webhook: packNotifyTarget(settings),
       });
       rememberRequest({ id, title: baseName, createdAt: Date.now() });
       const link = signingLink(id);
-      if (settings.webhook && list[0].email) {
-        notify(settings.webhook, { type: 'invite', to: list[0].email, title: baseName, link });
-      }
+      notifyAll(packNotifyTarget(settings), { type: 'invite', to: list[0].email, title: baseName, link });
       setCreated({ link, signersCount: signers.length, signerEmail: list[0].email || '', permanent: false });
       setScreen('created');
     } catch (err) {
@@ -245,7 +243,7 @@ function PrepareApp({ onLogout }) {
         signers: signerList(),
         note,
         ownerEmail: settings.ownerEmail || null,
-        webhook: settings.webhook || null,
+        webhook: packNotifyTarget(settings),
       });
       rememberTemplate({ id, title: baseName, createdAt: Date.now() });
       setCreated({ link: formLink(id), permanent: true });

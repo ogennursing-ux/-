@@ -8,7 +8,7 @@ import {
   rememberRequest,
   rememberTemplate,
 } from '../lib/api.js';
-import { getSettings } from '../lib/notify.js';
+import { getSettings, packNotifyTarget } from '../lib/notify.js';
 import { normalizeSigners } from '../lib/fields.js';
 import { useT } from '../lib/i18n.js';
 
@@ -51,7 +51,7 @@ export default function Templates() {
         signers: { current: 0, list, note: norm.note },
         signerEmail: list[0].email || null,
         ownerEmail: settings.ownerEmail || null,
-        webhook: settings.webhook || null,
+        webhook: packNotifyTarget(settings),
       });
       rememberRequest({ id, title: tmpl.title, createdAt: Date.now() });
       copy(signingLink(id));
@@ -101,7 +101,7 @@ export default function Templates() {
         signers: norm.list,
         note: norm.note,
         ownerEmail: settings.ownerEmail || null,
-        webhook: settings.webhook || null,
+        webhook: packNotifyTarget(settings),
       });
       rememberTemplate({ id, title, createdAt: Date.now() });
       setItems(listMyTemplates());
