@@ -119,6 +119,8 @@ const EN = {
   'הזן טוקן של בוט תחילה.': 'Enter a bot token first.',
   'הזן טוקן ו-Chat ID תחילה.': 'Enter a bot token and chat ID first.',
   'הודעת בדיקה ✅ הבוט מחובר לאפליקציית החתימות': 'Test message ✅ the bot is connected to the signing app',
+  'אין חיבור לטלגרם — בדוק את חיבור האינטרנט ונסה שוב.':
+    'Could not reach Telegram — check your internet connection and try again.',
   'שים לב: הטוקן מוטמע בבקשות חתימה — השתמש בבוט ייעודי להתראות בלבד.':
     'Note: the token is embedded in signing requests — use a dedicated bot for notifications only.',
 

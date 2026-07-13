@@ -13,6 +13,12 @@ export default function Settings({ onClose }) {
   const [tgBusy, setTgBusy] = useState(''); // ''|'detect'|'test'
   const [tgMsg, setTgMsg] = useState(null); // { ok, text }
 
+  // fetch() network failures surface as a terse English TypeError — translate.
+  const tgError = (e) =>
+    /fetch|network/i.test(e.message || '')
+      ? t('אין חיבור לטלגרם — בדוק את חיבור האינטרנט ונסה שוב.')
+      : e.message;
+
   const save = () => {
     saveSettings({
       ownerEmail: ownerEmail.trim(),
@@ -39,7 +45,7 @@ export default function Settings({ onClose }) {
         setTgMsg({ ok: false, text: t('לא נמצאו הודעות — שלח לבוט הודעה בטלגרם ונסה שוב.') });
       }
     } catch (e) {
-      setTgMsg({ ok: false, text: e.message });
+      setTgMsg({ ok: false, text: tgError(e) });
     } finally {
       setTgBusy('');
     }
@@ -56,7 +62,7 @@ export default function Settings({ onClose }) {
       await tgSendMessage(tgToken, tgChatId, t('הודעת בדיקה ✅ הבוט מחובר לאפליקציית החתימות'));
       setTgMsg({ ok: true, text: t('הודעת הבדיקה נשלחה! בדוק בטלגרם.') });
     } catch (e) {
-      setTgMsg({ ok: false, text: e.message });
+      setTgMsg({ ok: false, text: tgError(e) });
     } finally {
       setTgBusy('');
     }
