@@ -1136,6 +1136,7 @@ button {
 .req-main {
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-width: 0;
 }
 .req-title {
@@ -1441,11 +1442,23 @@ button {
     min-height: 36px;
   }
 
-  .req-item { flex-wrap: wrap; }
+  .req-item,
+  .allsig-item { flex-wrap: wrap; }
+  /* when the card wraps, the title block must own the full line and truncate,
+     otherwise a long unbroken name stretches the card past the screen */
+  .req-item .req-main,
+  .allsig-item .req-main {
+    flex: 1 1 100%;
+    width: 100%;
+  }
   .req-side {
     width: 100%;
     justify-content: flex-end;
   }
+  .dash-controls { flex-wrap: wrap; }
+  .dash-search { min-width: 0; }
+  .dash-filters { flex-wrap: wrap; }
+  .dash-show { min-width: 0; flex: 0 1 auto; }
   .signer-row { flex-wrap: wrap; }
   .signer-email-inline {
     border-inline-start: none;
