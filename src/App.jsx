@@ -54,7 +54,14 @@ export default function App() {
   else if (!authed) view = <Login onLogin={() => setAuthed(true)} />;
   else view = <PrepareApp onLogout={logout} />;
 
-  return <LangContext.Provider value={{ lang, setLang }}>{view}</LangContext.Provider>;
+  return (
+    <LangContext.Provider value={{ lang, setLang }}>
+      {view}
+      <footer className="app-footer">
+        <img src="/dvir-logo.png" alt="דביר מערכות" />
+      </footer>
+    </LangContext.Provider>
+  );
 }
 
 const newSigners = () => [{ ...DEFAULT_SIGNERS[0], email: '' }];

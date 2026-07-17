@@ -23,6 +23,11 @@ body,
   height: 100%;
 }
 
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
 body {
   font-family: 'Heebo', system-ui, Arial, sans-serif;
   /* direction follows the <html dir> attribute set by the language toggle */
@@ -42,7 +47,20 @@ button {
 .app {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  flex: 1 0 auto;
+}
+
+/* ---------------- footer ---------------- */
+.app-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0 16px;
+}
+.app-footer img {
+  height: 48px;
+  width: auto;
+  opacity: 0.9;
 }
 
 /* ---------------- header ---------------- */
