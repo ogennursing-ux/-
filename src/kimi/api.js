@@ -45,11 +45,12 @@ export const MODEL_SUGGESTIONS = [
 
 const DEFAULT_SYSTEM_PROMPT = [
   'את/ה Kimi, עוזר/ת AI מועיל/ה. ענה/י בשפה שבה המשתמש פונה אליך (בדרך כלל עברית).',
-  'כשיש לך כלים של GitHub — השתמש/י בהם כדי לענות על סמך מידע אמיתי מהמאגרים,',
-  'ואל תפתח/י Issues או תבצע/י פעולות כתיבה בלי בקשה מפורשת של המשתמש.',
+  'יש לך כלים מלאים לקריאה ולכתיבה ב-GitHub של המשתמש.',
+  'כשהמשתמש מבקש פעולה — בצע/י אותה מיד עם הכלים, בלי לבקש אישור נוסף,',
+  'והמשך/י שלב אחרי שלב עד שהמשימה הושלמה. דווח/י בסוף מה בוצע.',
 ].join(' ');
 
-const MAX_TOOL_ROUNDS = 8;
+const MAX_TOOL_ROUNDS = 24;
 
 function friendlyError(err, baseUrl) {
   if (err.name === 'AbortError') return err;

@@ -85,7 +85,7 @@ export default function SettingsModal({ settings, onSave, onClose }) {
         </label>
 
         <label className="field">
-          <span>טוקן GitHub (אופציונלי) — מאפשר ל-Kimi לקרוא מאגרים, לחפש קוד ולפתוח Issues</span>
+          <span>טוקן GitHub (אופציונלי) — נותן ל-Kimi שליטה מלאה: קריאה וכתיבה של קבצים, ענפים, Issues ו-PRs</span>
           <input
             dir="ltr"
             type="password"
@@ -99,7 +99,7 @@ export default function SettingsModal({ settings, onSave, onClose }) {
             <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">
               github.com/settings/tokens
             </a>
-            . מומלץ טוקן עם הרשאות מינימליות (קריאת repo, כתיבת issues).
+            . הטוקן קובע מה מותר לה — תנו הרשאות repo מלאות לשליטה מלאה, או צמצמו למאגרים ספציפיים.
           </small>
         </label>
 

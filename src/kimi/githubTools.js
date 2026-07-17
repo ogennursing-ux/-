@@ -82,7 +82,7 @@ export const GITHUB_TOOLS = [
     type: 'function',
     function: {
       name: 'github_create_issue',
-      description: 'פתיחת Issue חדש במאגר. להשתמש רק כשהמשתמש ביקש זאת במפורש',
+      description: 'פתיחת Issue חדש במאגר',
       parameters: {
         type: 'object',
         properties: {
@@ -111,6 +111,131 @@ export const GITHUB_TOOLS = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'github_write_file',
+      description: 'יצירה או עדכון של קובץ במאגר (commit ישיר). מזהה לבד אם הקובץ קיים ומעדכן אותו',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+          path: { type: 'string', description: 'נתיב הקובץ' },
+          content: { type: 'string', description: 'התוכן המלא החדש של הקובץ' },
+          message: { type: 'string', description: 'הודעת commit (אופציונלי)' },
+          branch: { type: 'string', description: 'ענף היעד (ברירת מחדל: הענף הראשי)' },
+        },
+        required: ['owner', 'repo', 'path', 'content'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'github_delete_file',
+      description: 'מחיקת קובץ מהמאגר (commit ישיר)',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+          path: { type: 'string' },
+          message: { type: 'string', description: 'הודעת commit (אופציונלי)' },
+          branch: { type: 'string', description: 'ענף היעד (אופציונלי)' },
+        },
+        required: ['owner', 'repo', 'path'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'github_create_branch',
+      description: 'יצירת ענף חדש במאגר',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+          branch: { type: 'string', description: 'שם הענף החדש' },
+          from: { type: 'string', description: 'ענף המקור (ברירת מחדל: הענף הראשי)' },
+        },
+        required: ['owner', 'repo', 'branch'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'github_create_pull_request',
+      description: 'פתיחת Pull Request',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+          title: { type: 'string' },
+          head: { type: 'string', description: 'הענף עם השינויים' },
+          base: { type: 'string', description: 'ענף היעד (ברירת מחדל: הענף הראשי)' },
+          body: { type: 'string', description: 'תיאור ה-PR (אופציונלי)' },
+        },
+        required: ['owner', 'repo', 'title', 'head'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'github_merge_pull_request',
+      description: 'מיזוג Pull Request',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+          number: { type: 'number', description: 'מספר ה-PR' },
+        },
+        required: ['owner', 'repo', 'number'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'github_comment_issue',
+      description: 'הוספת תגובה ל-Issue או ל-Pull Request',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+          number: { type: 'number', description: 'מספר ה-Issue/PR' },
+          body: { type: 'string', description: 'תוכן התגובה' },
+        },
+        required: ['owner', 'repo', 'number', 'body'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'github_update_issue',
+      description: 'עדכון Issue קיים — כותרת, תוכן או סגירה/פתיחה מחדש',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: { type: 'string' },
+          repo: { type: 'string' },
+          number: { type: 'number' },
+          title: { type: 'string', description: 'כותרת חדשה (אופציונלי)' },
+          body: { type: 'string', description: 'תוכן חדש (אופציונלי)' },
+          state: { type: 'string', enum: ['open', 'closed'], description: 'מצב חדש (אופציונלי)' },
+        },
+        required: ['owner', 'repo', 'number'],
+      },
+    },
+  },
 ];
 
 async function ghFetch(token, path, options = {}) {
@@ -136,6 +261,35 @@ function decodeBase64Utf8(b64) {
   const bytes = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
   return new TextDecoder('utf-8').decode(bytes);
+}
+
+function encodeBase64Utf8(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(bin);
+}
+
+function encPath(path) {
+  return encodeURIComponent(path).replace(/%2F/g, '/');
+}
+
+// Returns the sha of an existing file, or null when it doesn't exist yet.
+async function fileSha(token, owner, repo, path, branch) {
+  try {
+    const q = branch ? `?ref=${encodeURIComponent(branch)}` : '';
+    const file = await ghFetch(token, `/repos/${owner}/${repo}/contents/${encPath(path)}${q}`);
+    return Array.isArray(file) ? null : file.sha;
+  } catch {
+    return null;
+  }
+}
+
+async function defaultBranch(token, owner, repo) {
+  const info = await ghFetch(token, `/repos/${owner}/${repo}`);
+  return info.default_branch;
 }
 
 function clip(value) {
@@ -201,6 +355,78 @@ export async function executeGithubTool(name, args, token) {
         const q = args.ref ? `&sha=${encodeURIComponent(args.ref)}` : '';
         const commits = await ghFetch(token, `/repos/${args.owner}/${args.repo}/commits?per_page=15${q}`);
         return clip(commits.map((c) => `${c.sha.slice(0, 7)} ${c.commit.message.split('\n')[0]}`).join('\n'));
+      }
+      case 'github_write_file': {
+        const sha = await fileSha(token, args.owner, args.repo, args.path, args.branch);
+        const res = await ghFetch(token, `/repos/${args.owner}/${args.repo}/contents/${encPath(args.path)}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            message: args.message || `עדכון ${args.path}`,
+            content: encodeBase64Utf8(args.content),
+            ...(sha ? { sha } : {}),
+            ...(args.branch ? { branch: args.branch } : {}),
+          }),
+        });
+        return `${sha ? 'עודכן' : 'נוצר'} הקובץ ${res.content.path} (commit ${res.commit.sha.slice(0, 7)})`;
+      }
+      case 'github_delete_file': {
+        const sha = await fileSha(token, args.owner, args.repo, args.path, args.branch);
+        if (!sha) return `שגיאה: הקובץ ${args.path} לא נמצא.`;
+        await ghFetch(token, `/repos/${args.owner}/${args.repo}/contents/${encPath(args.path)}`, {
+          method: 'DELETE',
+          body: JSON.stringify({
+            message: args.message || `מחיקת ${args.path}`,
+            sha,
+            ...(args.branch ? { branch: args.branch } : {}),
+          }),
+        });
+        return `הקובץ ${args.path} נמחק.`;
+      }
+      case 'github_create_branch': {
+        const from = args.from || (await defaultBranch(token, args.owner, args.repo));
+        const ref = await ghFetch(
+          token,
+          `/repos/${args.owner}/${args.repo}/git/ref/heads/${encodeURIComponent(from)}`
+        );
+        await ghFetch(token, `/repos/${args.owner}/${args.repo}/git/refs`, {
+          method: 'POST',
+          body: JSON.stringify({ ref: `refs/heads/${args.branch}`, sha: ref.object.sha }),
+        });
+        return `נוצר ענף ${args.branch} מתוך ${from}.`;
+      }
+      case 'github_create_pull_request': {
+        const base = args.base || (await defaultBranch(token, args.owner, args.repo));
+        const pr = await ghFetch(token, `/repos/${args.owner}/${args.repo}/pulls`, {
+          method: 'POST',
+          body: JSON.stringify({ title: args.title, head: args.head, base, body: args.body || '' }),
+        });
+        return `נפתח PR #${pr.number}: ${pr.html_url}`;
+      }
+      case 'github_merge_pull_request': {
+        const res = await ghFetch(token, `/repos/${args.owner}/${args.repo}/pulls/${args.number}/merge`, {
+          method: 'PUT',
+          body: JSON.stringify({}),
+        });
+        return res.merged ? `PR #${args.number} מוזג בהצלחה.` : `המיזוג נכשל: ${res.message}`;
+      }
+      case 'github_comment_issue': {
+        const comment = await ghFetch(
+          token,
+          `/repos/${args.owner}/${args.repo}/issues/${args.number}/comments`,
+          { method: 'POST', body: JSON.stringify({ body: args.body }) }
+        );
+        return `נוספה תגובה: ${comment.html_url}`;
+      }
+      case 'github_update_issue': {
+        const patch = {};
+        if (args.title != null) patch.title = args.title;
+        if (args.body != null) patch.body = args.body;
+        if (args.state != null) patch.state = args.state;
+        const issue = await ghFetch(token, `/repos/${args.owner}/${args.repo}/issues/${args.number}`, {
+          method: 'PATCH',
+          body: JSON.stringify(patch),
+        });
+        return `Issue #${issue.number} עודכן (מצב: ${issue.state}).`;
       }
       default:
         return `שגיאה: כלי לא מוכר בשם ${name}`;

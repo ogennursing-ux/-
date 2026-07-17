@@ -16,6 +16,13 @@ const TOOL_LABELS = {
   github_list_issues: 'קורא Issues',
   github_create_issue: 'פותח Issue',
   github_list_commits: 'קורא commits',
+  github_write_file: 'כותב קובץ',
+  github_delete_file: 'מוחק קובץ',
+  github_create_branch: 'יוצר ענף',
+  github_create_pull_request: 'פותח Pull Request',
+  github_merge_pull_request: 'ממזג Pull Request',
+  github_comment_issue: 'מגיב ל-Issue',
+  github_update_issue: 'מעדכן Issue',
 };
 
 export default function App() {
