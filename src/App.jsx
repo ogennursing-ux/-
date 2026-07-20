@@ -6,6 +6,7 @@ import SignerBar from './components/SignerBar.jsx';
 import PdfPage from './components/PdfPage.jsx';
 import EditPanel from './components/EditPanel.jsx';
 import Dashboard from './components/Dashboard.jsx';
+import WhatsAppAgent from './components/WhatsAppAgent.jsx';
 import AllSignatures from './components/AllSignatures.jsx';
 import Templates from './components/Templates.jsx';
 import Settings from './components/Settings.jsx';
@@ -353,6 +354,7 @@ function PrepareApp({ onLogout }) {
           </button>
         </div>
         <Dropzone onFile={handleFile} busy={busy} />
+        <WhatsAppAgent onOpenSettings={() => setShowSettings(true)} />
         <Dashboard onDownloadSigned={downloadSigned} />
         <AllSignatures />
 

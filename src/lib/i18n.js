@@ -124,6 +124,34 @@ const EN = {
   'שים לב: הטוקן מוטמע בבקשות חתימה — השתמש בבוט ייעודי להתראות בלבד.':
     'Note: the token is embedded in signing requests — use a dedicated bot for notifications only.',
 
+  // whatsapp AI agent
+  'סוכן AI בוואטסאפ': 'WhatsApp AI agent',
+  פועל: 'Running',
+  כבוי: 'Off',
+  'הפעל סוכן': 'Start agent',
+  'עצור סוכן': 'Stop agent',
+  'הגדר בהגדרות ←': 'Set up in Settings ←',
+  'הסוכן עונה להודעות וואטסאפ בשם שלך: סטטוס מסמכים, קישורי חתימה ושליחת ה-PDF החתום. פועל כל עוד הלשונית פתוחה.':
+    'The agent answers your WhatsApp messages for you: document status, signing links, and sending the signed PDF. Runs while this tab stays open.',
+  'חבר את הוואטסאפ שלך דרך Green API והוסף מפתח Anthropic בהגדרות — והסוכן יענה להודעות בשמך.':
+    'Connect your WhatsApp via Green API and add an Anthropic key in Settings — the agent will answer messages for you.',
+  'סוכן חכם שעונה להודעות וואטסאפ בשמך: סטטוס מסמכים, קישורי חתימה ושליחת המסמך החתום. פתחו חשבון ב-green-api.com, צרו Instance, סרקו QR עם הוואטסאפ שלכם והדביקו כאן את הפרטים.':
+    'A smart agent that answers WhatsApp messages for you: document status, signing links, and the signed document. Sign up at green-api.com, create an instance, scan the QR with your WhatsApp, and paste the details here.',
+  'טוקן ה-API של ה-Instance': 'Instance API token',
+  'כתובת ה-API (רק אם שונה מברירת המחדל)': 'API URL (only if different from the default)',
+  'מפתח API של Anthropic (למוח של הסוכן)': "Anthropic API key (the agent's brain)",
+  'מספרים מורשים (לא חובה, מופרדים בפסיק)': 'Allowed numbers (optional, comma-separated)',
+  'בדוק חיבור לוואטסאפ': 'Test WhatsApp connection',
+  'בודק…': 'Checking…',
+  'מחובר! הוואטסאפ מקושר ומוכן.': 'Connected! WhatsApp is linked and ready.',
+  'החיבור תקין אבל הוואטסאפ לא מקושר (סטטוס: {s}). סרוק QR בלוח של Green API.':
+    'The connection works but WhatsApp is not linked (status: {s}). Scan the QR in the Green API console.',
+  'הזן Instance ID וטוקן תחילה.': 'Enter an Instance ID and token first.',
+  'אין חיבור ל-Green API — בדוק את הפרטים ואת חיבור האינטרנט.':
+    'Could not reach Green API — check the details and your internet connection.',
+  'המפתחות נשמרים רק בדפדפן הזה. אם לא הוזנו מספרים מורשים — הסוכן יענה לכל מי שכותב לך בפרטי.':
+    'The keys are stored only in this browser. If no allowed numbers are set, the agent replies to anyone who messages you privately.',
+
   // signature pad
   ציור: 'Draw',
   הקלדה: 'Type',
