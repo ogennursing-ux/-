@@ -127,11 +127,24 @@ function drawCheckDataUrl(boxW, boxH) {
 }
 
 // Contain-fit a (iw x ih) image inside the box at (x,y,boxW,boxH), centered.
-function containRect(iw, ih, x, y, boxW, boxH) {
+export function containRect(iw, ih, x, y, boxW, boxH) {
   const scale = Math.min(boxW / iw, boxH / ih);
   const w = iw * scale;
   const h = ih * scale;
   return { x: x + (boxW - w) / 2, y: y + (boxH - h) / 2, width: w, height: h };
+}
+
+// Convert a field's top-left percentage geometry into pdf-lib page coordinates.
+// pdf-lib's origin is bottom-left, whereas our percentages are measured from the
+// top, so the y axis is flipped here. This is the single most correctness-
+// sensitive calculation in the app: an error places every field in the wrong
+// spot, so it lives in its own tested function.
+export function fieldRect(field, pageWidth, pageHeight) {
+  const boxW = field.wPct * pageWidth;
+  const boxH = field.hPct * pageHeight;
+  const x = field.xPct * pageWidth;
+  const y = pageHeight - field.yPct * pageHeight - boxH;
+  return { x, y, boxW, boxH };
 }
 
 /**
@@ -164,11 +177,7 @@ export async function buildSignedPdf(originalPdfBytes, fields, audit) {
     if (!page) continue;
 
     const { width: pw, height: ph } = page.getSize();
-    const boxW = field.wPct * pw;
-    const boxH = field.hPct * ph;
-    const x = field.xPct * pw;
-    // pdf-lib's origin is bottom-left; our percentages are from the top.
-    const y = ph - field.yPct * ph - boxH;
+    const { x, y, boxW, boxH } = fieldRect(field, pw, ph);
 
     if (field.type === 'signature') {
       if (!field.value) continue;
