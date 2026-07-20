@@ -812,6 +812,35 @@ button {
   outline: none;
   border-color: var(--primary);
 }
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.text-input.has-toggle {
+  padding-inline-end: 44px;
+}
+.password-toggle {
+  position: absolute;
+  inset-inline-end: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 8px;
+  opacity: 0.7;
+}
+.password-toggle:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.05);
+}
 .checkbox-row {
   display: flex;
   align-items: center;
