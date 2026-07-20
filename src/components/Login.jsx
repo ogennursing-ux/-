@@ -11,6 +11,7 @@ export default function Login({ onLogin }) {
   const t = useT();
   const [user, setUser] = useState('');
   const [pass, setPass] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState(false);
 
   const submit = (e) => {
@@ -39,15 +40,33 @@ export default function Login({ onLogin }) {
       <div className="centered-screen">
         <form className="card login-card" onSubmit={submit}>
           <h2>{t('כניסה למערכת')}</h2>
-          <label className="field-label">{t('שם משתמש')}</label>
-          <input className="text-input" value={user} onChange={(e) => setUser(e.target.value)} autoFocus />
-          <label className="field-label" style={{ marginTop: 10 }}>{t('סיסמה')}</label>
+          <label className="field-label" htmlFor="login-user">{t('שם משתמש')}</label>
           <input
+            id="login-user"
             className="text-input"
-            type="password"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
+            value={user}
+            onChange={(e) => setUser(e.target.value)}
+            autoFocus
           />
+          <label className="field-label" htmlFor="login-pass" style={{ marginTop: 10 }}>{t('סיסמה')}</label>
+          <div className="password-field">
+            <input
+              id="login-pass"
+              className="text-input has-toggle"
+              type={showPass ? 'text' : 'password'}
+              value={pass}
+              onChange={(e) => setPass(e.target.value)}
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPass((v) => !v)}
+              aria-label={showPass ? t('הסתר סיסמה') : t('הצג סיסמה')}
+              aria-pressed={showPass}
+            >
+              {showPass ? '🙈' : '👁️'}
+            </button>
+          </div>
           {error && <p className="login-error">{t('שם משתמש או סיסמה שגויים')}</p>}
           <button className="btn-primary full" type="submit" style={{ marginTop: 14 }}>
             {t('התחבר')}

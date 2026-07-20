@@ -182,6 +182,8 @@ const EN = {
   'כניסה למערכת': 'Sign in',
   'שם משתמש': 'Username',
   סיסמה: 'Password',
+  'הצג סיסמה': 'Show password',
+  'הסתר סיסמה': 'Hide password',
   התחבר: 'Log in',
   'שם משתמש או סיסמה שגויים': 'Wrong username or password',
   'התנתק': 'Log out',
