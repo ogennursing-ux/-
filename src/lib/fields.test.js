@@ -6,6 +6,9 @@ import {
   hexToRgba,
   todayISO,
   uid,
+  joinName,
+  computeFieldValue,
+  countMissingRequired,
   FIELD_DEFAULTS,
   FIELD_LABELS,
   FIELD_ICONS,
@@ -115,6 +118,83 @@ describe('uid', () => {
     const b = uid();
     expect(a).toBeTruthy();
     expect(a).not.toBe(b);
+  });
+});
+
+describe('joinName', () => {
+  it('joins first and last with a space', () => {
+    expect(joinName('דנה', 'כהן')).toBe('דנה כהן');
+  });
+  it('skips a blank part', () => {
+    expect(joinName('דנה', '')).toBe('דנה');
+    expect(joinName('', 'כהן')).toBe('כהן');
+    expect(joinName(undefined, 'כהן')).toBe('כהן');
+  });
+  it('returns an empty string when both are blank', () => {
+    expect(joinName('', '')).toBe('');
+  });
+});
+
+describe('computeFieldValue', () => {
+  const shared = {
+    firstName: 'דנה',
+    lastName: 'כהן',
+    fullName: '',
+    idNumber: '123456782',
+    initials: 'ד.כ',
+    signature: 'data:image/png;base64,AAAA',
+  };
+
+  it('reads each shared identity field from the shared object', () => {
+    expect(computeFieldValue({ type: 'signature' }, shared)).toBe('data:image/png;base64,AAAA');
+    expect(computeFieldValue({ type: 'initials' }, shared)).toBe('ד.כ');
+    expect(computeFieldValue({ type: 'firstName' }, shared)).toBe('דנה');
+    expect(computeFieldValue({ type: 'lastName' }, shared)).toBe('כהן');
+    expect(computeFieldValue({ type: 'idNumber' }, shared)).toBe('123456782');
+  });
+
+  it('derives fullName from first+last when not explicitly set', () => {
+    expect(computeFieldValue({ type: 'fullName' }, shared)).toBe('דנה כהן');
+  });
+
+  it('prefers an explicit fullName over the derived one', () => {
+    expect(computeFieldValue({ type: 'fullName' }, { ...shared, fullName: 'ד. כהן' })).toBe('ד. כהן');
+  });
+
+  it('reads text-like fields from perField by id', () => {
+    const f = { id: 'x1', type: 'text' };
+    expect(computeFieldValue(f, shared, { x1: 'שלום' })).toBe('שלום');
+  });
+
+  it('falls back to an existing field value, then empty string', () => {
+    expect(computeFieldValue({ id: 'x', type: 'date', value: '2026-01-01' }, shared, {})).toBe('2026-01-01');
+    expect(computeFieldValue({ id: 'y', type: 'text' }, shared, {})).toBe('');
+  });
+
+  it('returns empty strings for missing shared values instead of undefined', () => {
+    expect(computeFieldValue({ type: 'firstName' }, {})).toBe('');
+    expect(computeFieldValue({ type: 'signature' }, {})).toBe('');
+  });
+});
+
+describe('countMissingRequired', () => {
+  it('counts only required, empty fields', () => {
+    const fields = [
+      { type: 'text', required: true, value: '' },      // missing
+      { type: 'text', required: true, value: 'ok' },    // filled
+      { type: 'text', required: false, value: '' },     // not required
+      { type: 'checkbox', required: true, value: false },// missing
+      { type: 'checkbox', required: true, value: true }, // filled
+    ];
+    expect(countMissingRequired(fields)).toBe(2);
+  });
+
+  it('returns 0 when nothing is required', () => {
+    expect(countMissingRequired([{ type: 'text', value: '' }])).toBe(0);
+  });
+
+  it('returns 0 for an empty field list', () => {
+    expect(countMissingRequired([])).toBe(0);
   });
 });
 

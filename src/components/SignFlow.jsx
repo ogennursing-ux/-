@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import PdfPage from './PdfPage.jsx';
 import SignaturePad from './SignaturePad.jsx';
-import { isFieldEmpty, todayISO } from '../lib/fields.js';
+import { todayISO, joinName, computeFieldValue, countMissingRequired } from '../lib/fields.js';
 import { useT } from '../lib/i18n.js';
 
 // "Fill once" signing surface: the signer fills a single prominent form and the
@@ -31,29 +31,18 @@ export default function SignFlow({ pages, fields, signers, currentSigner, title,
     setData((d) => {
       const next = { ...d, ...patch };
       if (('firstName' in patch || 'lastName' in patch) && !fullNameTouched) {
-        next.fullName = [next.firstName, next.lastName].filter(Boolean).join(' ');
+        next.fullName = joinName(next.firstName, next.lastName);
       }
       return next;
     });
 
-  function computeValue(f) {
-    switch (f.type) {
-      case 'signature': return data.signature || '';
-      case 'initials': return data.initials || '';
-      case 'firstName': return data.firstName || '';
-      case 'lastName': return data.lastName || '';
-      case 'fullName':
-        return data.fullName || [data.firstName, data.lastName].filter(Boolean).join(' ');
-      case 'idNumber': return data.idNumber || '';
-      default: return perField[f.id] ?? f.value ?? '';
-    }
-  }
+  const computeValue = (f) => computeFieldValue(f, data, perField);
 
   const filled = fields.map((f) => (f.signer === currentSigner ? { ...f, value: computeValue(f) } : f));
 
   function submit() {
     const mine = filled.filter((f) => f.signer === currentSigner);
-    const missing = mine.filter((f) => f.required && isFieldEmpty(f)).length;
+    const missing = countMissingRequired(mine);
     if (missing) {
       alert(t('יש למלא {n} שדות חובה לפני השליחה.', { n: missing }));
       return;

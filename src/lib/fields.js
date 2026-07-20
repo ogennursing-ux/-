@@ -57,6 +57,28 @@ export function normalizeSigners(s) {
 // A field counts as empty (unfilled) for validation purposes.
 export const isFieldEmpty = (f) => (f.type === 'checkbox' ? f.value !== true : !f.value);
 
+// Join a first/last name into a full name, skipping blank parts.
+export const joinName = (first, last) => [first, last].filter(Boolean).join(' ');
+
+// Resolve a field's value in the "fill once" signing flow. Shared identity
+// fields read from the single per-signer `shared` object; everything else reads
+// its own `perField[id]` entry, falling back to any value already on the field.
+export function computeFieldValue(field, shared = {}, perField = {}) {
+  switch (field.type) {
+    case 'signature': return shared.signature || '';
+    case 'initials': return shared.initials || '';
+    case 'firstName': return shared.firstName || '';
+    case 'lastName': return shared.lastName || '';
+    case 'fullName': return shared.fullName || joinName(shared.firstName, shared.lastName);
+    case 'idNumber': return shared.idNumber || '';
+    default: return perField[field.id] ?? field.value ?? '';
+  }
+}
+
+// How many required fields are still unfilled (blocks submission when > 0).
+export const countMissingRequired = (fields) =>
+  fields.filter((f) => f.required && isFieldEmpty(f)).length;
+
 export const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 export const uid = () =>
