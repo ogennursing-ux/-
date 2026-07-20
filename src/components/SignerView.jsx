@@ -4,9 +4,8 @@ import LangToggle from './LangToggle.jsx';
 import { api } from '../lib/api.js';
 import { notifyAll, bytesToBase64, getIp } from '../lib/notify.js';
 import { renderPdfPages, buildSignedPdf } from '../lib/pdfUtils.js';
+import { normalizeSigners } from '../lib/fields.js';
 import { useT } from '../lib/i18n.js';
-
-const FALLBACK = { current: 0, list: [{ name: 'החותם', color: '#1f7a53' }], note: '' };
 
 function download(bytes, name) {
   const blob = new Blob([bytes], { type: 'application/pdf' });
@@ -18,13 +17,6 @@ function download(bytes, name) {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-}
-
-function normalizeSigners(s) {
-  if (!s) return FALLBACK;
-  if (Array.isArray(s)) return { current: 0, list: s.length ? s : FALLBACK.list, note: '' };
-  if (!s.list || !s.list.length) return { ...FALLBACK, note: s.note || '' };
-  return { current: s.current || 0, list: s.list, note: s.note || '' };
 }
 
 export default function SignerView({ id }) {
